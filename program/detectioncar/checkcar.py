@@ -2,12 +2,13 @@
 __author__ = 'liurj'
 
 #训练数据集 Stanford Univercity : http://ai.stanford.edu/~jkrause/cars/car_dataset.html
-
+#UIUC http://cogcomp.org/Data/Car/ 
 import cv2
 import numpy as np
 from os.path import join
 
-datapath = ''
+datapath = './data/images/TrainImages/'
+
 #路径函数 pos-0.pgm neg-0.pgm
 def path(cls,i):
     return "%s/%s%d.pgm" % (datapath,cls,i+1)
@@ -30,10 +31,14 @@ extract_bow = cv2.BOWImgDescriptorExtractor(extract,flann)
 def extract_sift(fn):
     #以灰度读取图像
     im = cv2.imread(fn,0)
+    #detect.detect(im) 获取关键点 一个数组包括 角度 坐标 方向等 <KeyPoint 0498EDE0> 以这种数值对表示
+    #extract.compute 计算关键点的描述符 返回关键点，数组
     return extract.compute(im,detect.detect(im))[1]
 
 #每个类都差数据集中读取8个图像 （8个pos正样本，8个neg负样本）
-for i in range(8):
+#取50个  131个负样本数据集读取时，有错这里
+for i in range(50):
+    print (path(pos,i))
     bow_kmeans_trainer.add(extract_sift(path(pos,i)))
     bow_kmeans_trainer.add(extract_sift(path(neg,i)))
 #调用cluster() 函数，执行kmeans（）分类并返回词汇
@@ -48,7 +53,8 @@ def bow_features(fn):
 
 #添加训练集
 traindata,trainlabels = [],[]
-for i in range(20):
+for i in range(100):
+    print (path(neg, i))
     traindata.extend(bow_features(path(pos,i)))
     trainlabels.append(1)
     traindata.extend(bow_features(path(neg,i)))
@@ -73,7 +79,7 @@ not_car_predict = predict(notcar)
 font = cv2.FONT_HERSHEY_SIMPLEX
 
 if (car_predict[1][0][0] == 1.0):
-    cv2.putText(car_img,'Car Detected',(10,30),font,1,(0,255,0),cv2.LINE_AA)
+    cv2.putText(car_img,'Car Detected',(10,30),font,1,(0,255,0),2,cv2.LINE_AA)
 
 if(not_car_predict[1][0][0] == -1.0):
     cv2.putText(notcar_img,'Car Not Detected',(10,30),font,1,(0,0,255),2,cv2.LINE_AA)
