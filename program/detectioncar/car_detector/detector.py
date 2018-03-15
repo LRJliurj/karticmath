@@ -6,7 +6,7 @@ import numpy as np
 
 datapath = './TrainImages/'
 
-SAMPLES = 400
+SAMPLES = 450
 
 def path(cls,i):
     return "%s/%s%d.pgm" % (datapath,cls,i+1)
@@ -35,7 +35,7 @@ def car_detector():
     detect,extract = get_extract_detect()
     flann_matcher = get_flann_matcher()
     print ("构建词袋模型训练器....")
-    bow_kmeans_trainer = cv2.BOWKMeansTrainer(1000)
+    bow_kmeans_trainer = cv2.BOWKMeansTrainer(2000)
     extract_bow = cv2.BOWImgDescriptorExtractor(extract,flann_matcher)
 
     print ("添加特征到训练器....")
@@ -43,8 +43,9 @@ def car_detector():
         bow_kmeans_trainer.add(extract_sift(path(pos,i),extract,detect))
         bow_kmeans_trainer.add(extract_sift(path(neg,i),extract,detect))
 
-    #执行聚类  返回图像特征词汇
+    #执行聚类  返回图像特征词汇 voc.shape=(1000,128)
     voc = bow_kmeans_trainer.cluster()
+    np.save('./voc/voc.npy',voc)
     extract_bow.setVocabulary(voc)
 
     traindata,trainlabels = [],[]
@@ -66,6 +67,21 @@ def car_detector():
     svm.setKernel(cv2.ml.SVM_RBF)
 
     svm.train(np.array(traindata),cv2.ml.ROW_SAMPLE,np.array(trainlabels))
+    svm.save('./model/svm_carxml')
+    # svm.load('./model/svm_carxml')
     return svm,extract_bow
 
 
+
+def load_model_svm_extracter():
+    svm = cv2.ml.SVM_create()
+    svm = svm.load('./model/svm_carxml')
+    detect,extract = get_extract_detect()
+    flann_matcher = get_flann_matcher()
+    extract_bow = cv2.BOWImgDescriptorExtractor(extract, flann_matcher)
+    voc = np.load('./voc/voc.npy')
+    extract_bow.setVocabulary(voc)
+    return svm,extract_bow
+
+if __name__=='__main__':
+    car_detector()
