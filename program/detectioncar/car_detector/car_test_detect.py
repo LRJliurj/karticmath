@@ -11,7 +11,7 @@ from sliding_window import sliding_window
 def in_range(number,test,thresh=0.2):
     return abs(number-test) < thresh
 
-img_tst='./images/test-1-car.pgm'
+img_tst='./images/car.jpg'
 
 #训练svm检测模型 只做一次
 # svm,extractor = car_detector()
