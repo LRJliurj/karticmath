@@ -1,0 +1,6 @@
+helmet
+head
+fire_extinguisher
+oxygen_tank
+acetylene_bottle
+neg
